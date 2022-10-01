@@ -17,6 +17,7 @@ public class AdminLogin {
 	PassengerDao dao=new PassengerDaoImpl();
     try {
 		dao.loginadmin(username, password);
+		
 	} catch (AdminException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();

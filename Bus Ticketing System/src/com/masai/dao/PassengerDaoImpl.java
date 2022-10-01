@@ -7,9 +7,11 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.masai.bean.Booking;
 import com.masai.bean.Bus;
 import com.masai.bean.Customer;
 import com.masai.exceptions.AdminException;
+import com.masai.exceptions.BookingException;
 import com.masai.exceptions.BusException;
 import com.masai.exceptions.CustomerException;
 import com.masai.utility.DBUtil;
@@ -93,16 +95,11 @@ public class PassengerDaoImpl implements PassengerDao{
 //				String p= rs.getString("password");
 //				
 				
-			System.out.println("Admin Login Successfully");
+			System.out.println("Admin Logged in Successfully");
 				
 				
 			}else
 				throw new AdminException("Invalid Username or password.. ");
-			
-			
-			
-			
-			
 		} catch (SQLException e) {
 			// TODO: handle exception
 			throw new AdminException(e.getMessage());
@@ -117,9 +114,6 @@ public class PassengerDaoImpl implements PassengerDao{
 		try(Connection conn= DBUtil.provideConnection()) {
 			
 			PreparedStatement ps= conn.prepareStatement("select * from Bus");
-			
-			
-			
 			ResultSet rs= ps.executeQuery();
 			
 			while(rs.next()) {
@@ -182,6 +176,7 @@ public class PassengerDaoImpl implements PassengerDao{
 	 			
 	 			if(x > 0)
 	 				message = "Seat Booked Successfully.... ";
+	 			
 	 			else
 	 				throw new BusException("Techical error..");
 	 		}
@@ -218,6 +213,41 @@ public class PassengerDaoImpl implements PassengerDao{
 		}
 		
 		return message;
+	}
+
+	@Override
+	public List<Booking> showAllBooking() throws BookingException {
+		List<Booking> bookings=new ArrayList<>();
+        try (Connection conn = DBUtil.provideConnection()){
+			
+			PreparedStatement ps= conn.prepareStatement("select c.cusId,b.busNo,c.cname,b.routefrom,b.routeto,b.arrival,b.departure,b.fare from customer c,bus b,booking bb where "
+					+ "b.busNo=bb.busNo AND bb.cusId=c.cusId");
+						
+			ResultSet rs= ps.executeQuery();
+			
+			while(rs.next()) {
+				int cid=rs.getInt("cusId");
+				int bNo=rs.getInt("busNo");
+				String cname=rs.getString("cname");
+				String brf=rs.getString("routefrom");
+				String brt=rs.getString("routeto");
+				String ba=rs.getString("arrival");
+				String bd=rs.getString("departure");
+				int fare=rs.getInt("fare");
+				
+				Booking booking=new Booking(cid, bNo, cname, brf, brt,ba,bd, fare);
+				
+				bookings.add(booking);
+							
+			}
+		
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+		
+		if(bookings.isEmpty())
+			throw new BookingException("No Booking");		
+		return bookings;
 	}
 
 	
